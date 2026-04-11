@@ -228,10 +228,9 @@
             }
         }
 
-        function logout() {
-            sessionStorage.removeItem('logged');
-            sessionStorage.removeItem('user_nome');
-            sessionStorage.removeItem('user_ruolo');
+        async function logout() {
+            await fetch(API_BASE + 'logout.php', { method: 'POST' });
+            sessionStorage.clear();
             window.location.href = 'index.html';
         }
 

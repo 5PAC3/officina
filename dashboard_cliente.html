@@ -21,6 +21,8 @@
         </div>
     </div>
     <script>
+        const API_BASE = 'http://localhost/officina/api/';
+        
         if (!sessionStorage.getItem('logged') || sessionStorage.getItem('user_ruolo') !== 'cliente') {
             window.location.href = 'login_cliente.html';
         }
@@ -28,7 +30,8 @@
         const nome = sessionStorage.getItem('user_nome') || 'Cliente';
         document.getElementById('benvenuto').textContent = 'Ciao ' + nome;
         
-        function logout() {
+        async function logout() {
+            await fetch(API_BASE + 'logout.php', { method: 'POST' });
             sessionStorage.clear();
             window.location.href = 'index.html';
         }
