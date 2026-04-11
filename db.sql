@@ -22,6 +22,7 @@ CREATE TABLE dipendente (
     password VARCHAR(255) NOT NULL, -- in produzione usare hash
     nome VARCHAR(50),
     cognome VARCHAR(50),
+    ruolo ENUM('admin', 'tecnico', 'magazziniere') DEFAULT 'tecnico',
     officina_codice VARCHAR(10),
     FOREIGN KEY (officina_codice) REFERENCES officina(codice) ON DELETE SET NULL
 );
@@ -53,7 +54,8 @@ CREATE TABLE cliente (
     cognome VARCHAR(50) NOT NULL,
     nome VARCHAR(50) NOT NULL,
     telefono VARCHAR(20),
-    email VARCHAR(100)
+    email VARCHAR(100),
+    password VARCHAR(255)
 );
 
 -- Autoveicoli
@@ -181,4 +183,4 @@ INSERT INTO presenza_pezzo VALUES
 ('NA003', 'P001', 25), ('NA003', 'P002', 40), ('NA003', 'P003', 80), ('NA003', 'P004', 20);
 
 -- Dipendente admin (password: admin123)
-INSERT INTO dipendente VALUES (1, 'admin', '$2y$12$/5Ap0BXO3PVHDXUw7zAxHuaov2N7jYOghnoL5sWcpbV51vQQs7lCa', 'Amministratore', 'Sistema', NULL);
+INSERT INTO dipendente (id, username, password, nome, cognome, ruolo, officina_codice) VALUES (1, 'admin', '$2y$12$/5Ap0BXO3PVHDXUw7zAxHuaov2N7jYOghnoL5sWcpbV51vQQs7lCa', 'Amministratore', 'Sistema', 'admin', NULL);
