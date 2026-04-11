@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area Tecnico</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .intervento-card {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .intervento-card h4 { margin: 0 0 10px 0; }
+        .intervento-card p { margin: 5px 0; color: #666; }
+        .badge { 
+            display: inline-block; 
+            background: #3498db; 
+            color: white; 
+            padding: 3px 8px; 
+            border-radius: 3px; 
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Area Tecnico</h1>
+            <p id="benvenuto"></p>
+            <button onclick="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;">Logout</button>
+        </header>
+        <div class="search-section">
+            <h2>Interventi</h2>
+            <button onclick="caricaInterventi()" class="btn-primary">Aggiorna lista</button>
+            <div id="listaInterventi" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+    <script>
+        const API_BASE = 'http://localhost/officina/api/';
+        
+        if (!sessionStorage.getItem('logged') || sessionStorage.getItem('user_ruolo') !== 'tecnico') {
+            window.location.href = 'login.html';
+        }
+        
+        const nome = sessionStorage.getItem('user_nome') || 'Tecnico';
+        document.getElementById('benvenuto').textContent = 'Ciao ' + nome;
+        
+        async function logout() {
+            await fetch(API_BASE + 'logout.php', { method: 'POST' });
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+        
+        async function caricaInterventi() {
+            const container = document.getElementById('listaInterventi');
+            container.innerHTML = '<p>Caricamento...</p>';
+            
+            try {
+                const response = await fetch(API_BASE + 'get_interventi.php');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    container.innerHTML = '<p style="color:red">' + (data.error || 'Errore') + '</p>';
+                    return;
+                }
+                
+                if (data.interventi.length === 0) {
+                    container.innerHTML = '<p>Nessun intervento trovato</p>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                data.interventi.forEach(i => {
+                    const card = document.createElement('div');
+                    card.className = 'intervento-card';
+                    card.innerHTML = `
+                        <h4>${i.codice} - ${i.descrizione || 'Intervento'}</h4>
+                        <p><strong>Data:</strong> ${i.data}</p>
+                        <p><strong>Officina:</strong> ${i.officina_nome || 'N/A'}</p>
+                        <p><strong>Veicolo:</strong> ${i.targa || 'N/A'} (${i.veicolo_modello || 'N/A'})</p>
+                        <p><strong>Cliente:</strong> ${i.cliente_nome || ''} ${i.cliente_cognome || ''}</p>
+                        <span class="badge">${i.officina_codice || 'N/A'}</span>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                container.innerHTML = '<p style="color:red">Errore di connessione</p>';
+            }
+        }
+        
+        caricaInterventi();
+    </script>
+</body>
+</html>

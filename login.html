@@ -43,7 +43,15 @@
                 sessionStorage.setItem('logged', 'true');
                 sessionStorage.setItem('user_nome', data.nome || username);
                 sessionStorage.setItem('user_ruolo', data.ruolo || 'tecnico');
-                window.location.href = 'dashboard.html';
+                
+                const ruolo = data.ruolo || 'tecnico';
+                if (ruolo === 'admin' || ruolo === 'tecnico') {
+                    window.location.href = 'dashboard.html';
+                } else if (ruolo === 'magazziniere') {
+                    window.location.href = 'dashboard_magazziniere.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
             } else {
                 msg.textContent = data.error || 'Accesso negato';
                 msg.style.color = 'red';

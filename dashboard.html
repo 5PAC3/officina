@@ -146,6 +146,15 @@
 
         const nome = sessionStorage.getItem('user_nome') || 'Admin';
         const ruolo = sessionStorage.getItem('user_ruolo') || 'tecnico';
+        
+        if (ruolo === 'magazziniere') {
+            window.location.href = 'dashboard_magazziniere.html';
+        } else if (ruolo === 'tecnico') {
+            window.location.href = 'dashboard_tecnico.html';
+        } else if (ruolo !== 'admin') {
+            window.location.href = 'index.html';
+        }
+        
         document.getElementById('benvenuto').textContent = 'Ciao ' + nome;
         caricaListe();
 
