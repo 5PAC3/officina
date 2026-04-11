@@ -23,7 +23,7 @@ if (empty($username) || empty($password)) {
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
-$stmt = $conn->prepare("SELECT id, password, nome, cognome FROM dipendente WHERE username = ?");
+$stmt = $conn->prepare("SELECT id, password, nome, cognome, ruolo FROM dipendente WHERE username = ?");
 $stmt->bind_param("s", $username);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -31,11 +31,12 @@ $result = $stmt->get_result();
 if ($row = $result->fetch_assoc()) {
     if (password_verify($password, $row['password'])) {
         session_start();
-        $_SESSION['admin_logged'] = true;
-        $_SESSION['admin_id'] = $row['id'];
-        $_SESSION['admin_nome'] = $row['nome'];
+        $_SESSION['logged'] = true;
+        $_SESSION['user_id'] = $row['id'];
+        $_SESSION['user_nome'] = $row['nome'];
+        $_SESSION['user_ruolo'] = $row['ruolo'];
         
-        echo json_encode(['success' => true, 'message' => 'Login effettuato', 'nome' => $row['nome']]);
+        echo json_encode(['success' => true, 'message' => 'Login effettuato', 'nome' => $row['nome'], 'ruolo' => $row['ruolo']]);
     } else {
         echo json_encode(['success' => false, 'error' => 'Password errata']);
     }

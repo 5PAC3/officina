@@ -40,8 +40,9 @@
             
             const data = await response.json();
             if (data.success) {
-                sessionStorage.setItem('admin_logged', 'true');
-                sessionStorage.setItem('admin_nome', data.nome || username);
+                sessionStorage.setItem('logged', 'true');
+                sessionStorage.setItem('user_nome', data.nome || username);
+                sessionStorage.setItem('user_ruolo', data.ruolo || 'tecnico');
                 window.location.href = 'dashboard.html';
             } else {
                 msg.textContent = data.error || 'Accesso negato';
