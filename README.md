@@ -6,7 +6,7 @@ Web app per la gestione di officine automobilistiche, ricerca servizi e ricambi.
 
 - [x] Sistema ruoli completo (admin/tecnico/magazziniere/cliente)
 - [x] Registrazione e login utenti (clienti)
-- [ ] Logout per tutti gli utenti
+- [x] Logout per tutti gli utenti
 - [ ] Dashboard tecnico (visualizza interventi)
 - [ ] Dashboard magazziniere (gestione scorte)
 - [ ] Pagina listino prezzi per officina (pubblico)
