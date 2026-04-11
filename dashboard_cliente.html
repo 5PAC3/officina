@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area Cliente</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Area Cliente</h1>
+            <p id="benvenuto"></p>
+            <button onclick="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;">Logout</button>
+        </header>
+        <div class="search-section">
+            <h2>I tuoi veicoli</h2>
+            <p> Qui vedrai i tuoi veicoli e gli interventi effettuati.</p>
+            <p><em>Funzionalità in arrivo...</em></p>
+        </div>
+    </div>
+    <script>
+        if (!sessionStorage.getItem('logged') || sessionStorage.getItem('user_ruolo') !== 'cliente') {
+            window.location.href = 'login_cliente.html';
+        }
+        
+        const nome = sessionStorage.getItem('user_nome') || 'Cliente';
+        document.getElementById('benvenuto').textContent = 'Ciao ' + nome;
+        
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

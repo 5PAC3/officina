@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Cliente</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Area Clienti</h1>
+        </header>
+        <div class="search-section">
+            <form id="formLogin">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn-primary">Accedi</button>
+            </form>
+            <p id="msg" style="margin-top:15px;"></p>
+            <p style="margin-top:15px;">Non hai un account? <a href="registrazione.html">Registrati</a></p>
+        </div>
+    </div>
+    <script>
+        const API_BASE = 'http://localhost/officina/api/';
+        
+        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const msg = document.getElementById('msg');
+            
+            const response = await fetch(API_BASE + 'login_cliente.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                sessionStorage.setItem('logged', 'true');
+                sessionStorage.setItem('user_nome', data.nome || email);
+                sessionStorage.setItem('user_ruolo', 'cliente');
+                sessionStorage.setItem('user_id', data.codice || '');
+                window.location.href = 'dashboard_cliente.html';
+            } else {
+                msg.textContent = data.error || 'Accesso negato';
+                msg.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
