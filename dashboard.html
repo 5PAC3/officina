@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestione Catalogo</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .admin-panel {
+            padding: 40px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .tab-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .item-list {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Area Amministratori</h1>
+            <p id="benvenuto"></p>
+            <button onclick="logout()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer;">Logout</button>
+        </header>
+
+        <div class="admin-panel">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="showTab('servizi')">Servizi</button>
+                <button class="tab-btn" onclick="showTab('pezzi')">Pezzi Ricambio</button>
+                <button class="tab-btn" onclick="showTab('accessori')">Accessori</button>
+            </div>
+
+            <!-- Form Servizi -->
+            <div id="servizi-tab" class="tab-content active">
+                <h3>Aggiungi Servizio</h3>
+                <form id="formServizio">
+                    <div class="form-group">
+                        <input type="text" id="serv_codice" placeholder="Codice (es: S005)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="serv_descrizione" placeholder="Descrizione" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="serv_costo" step="0.01" placeholder="Costo orario (€)" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Aggiungi Servizio</button>
+                </form>
+                <div id="listaServizi" class="item-list"></div>
+            </div>
+
+            <!-- Form Pezzi -->
+            <div id="pezzi-tab" class="tab-content">
+                <h3>Aggiungi Pezzo di Ricambio</h3>
+                <form id="formPezzo">
+                    <div class="form-group">
+                        <input type="text" id="pez_codice" placeholder="Codice (es: P005)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="pez_descrizione" placeholder="Descrizione" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="pez_costo" step="0.01" placeholder="Costo unitario (€)" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Aggiungi Pezzo</button>
+                </form>
+                <div id="listaPezzi" class="item-list"></div>
+            </div>
+
+            <!-- Form Accessori -->
+            <div id="accessori-tab" class="tab-content">
+                <h3>Aggiungi Accessorio</h3>
+                <form id="formAccessorio">
+                    <div class="form-group">
+                        <input type="text" id="acc_codice" placeholder="Codice (es: A004)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="acc_descrizione" placeholder="Descrizione" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="acc_costo" step="0.01" placeholder="Costo unitario (€)" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Aggiungi Accessorio</button>
+                </form>
+                <div id="listaAccessori" class="item-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost/officina/api/';
+        
+        if (!sessionStorage.getItem('admin_logged')) {
+            window.location.href = 'login.html';
+        }
+
+        const nome = sessionStorage.getItem('admin_nome') || 'Admin';
+        document.getElementById('benvenuto').textContent = 'Ciao ' + nome;
+        caricaListe();
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            event.target.classList.add('active');
+            caricaListe();
+        }
+
+        async function caricaListe() {
+            // Carica e mostra tutti gli elementi
+            await caricaServizi();
+            await caricaPezzi();
+            await caricaAccessori();
+        }
+
+        async function caricaServizi() {
+            const response = await fetch(API_BASE + 'get_servizi.php');
+            const data = await response.json();
+            const container = document.getElementById('listaServizi');
+            container.innerHTML = '<h4>Servizi esistenti:</h4>';
+            if (data.success && data.elementi.length > 0) {
+                data.elementi.forEach(s => {
+                    container.innerHTML += `
+                        <div class="item">
+                            <div><strong>${s.codice}</strong> - ${s.descrizione} (${s.costo_orario}€/ora)</div>
+                            <button class="delete-btn" onclick="elimina('servizio','${s.codice}')">Elimina</button>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML += '<p>Nessun servizio presente</p>';
+            }
+        }
+
+        async function caricaPezzi() {
+            const response = await fetch(API_BASE + 'get_pezzi.php');
+            const data = await response.json();
+            const container = document.getElementById('listaPezzi');
+            container.innerHTML = '<h4>Pezzi esistenti:</h4>';
+            if (data.success && data.elementi.length > 0) {
+                data.elementi.forEach(p => {
+                    container.innerHTML += `
+                        <div class="item">
+                            <div><strong>${p.codice}</strong> - ${p.descrizione} (${p.costo_unitario}€)</div>
+                            <button class="delete-btn" onclick="elimina('pezzo','${p.codice}')">Elimina</button>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML += '<p>Nessun pezzo presente</p>';
+            }
+        }
+
+        async function caricaAccessori() {
+            const response = await fetch(API_BASE + 'get_accessori.php');
+            const data = await response.json();
+            const container = document.getElementById('listaAccessori');
+            container.innerHTML = '<h4>Accessori esistenti:</h4>';
+            if (data.success && data.elementi.length > 0) {
+                data.elementi.forEach(a => {
+                    container.innerHTML += `
+                        <div class="item">
+                            <div><strong>${a.codice}</strong> - ${a.descrizione} (${a.costo_unitario}€)</div>
+                            <button class="delete-btn" onclick="elimina('accessorio','${a.codice}')">Elimina</button>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML += '<p>Nessun accessorio presente</p>';
+            }
+        }
+
+        async function elimina(tipo, codice) {
+            if (confirm(`Eliminare ${tipo} ${codice}?`)) {
+                alert('Elemento eliminato (simulazione)');
+                caricaListe();
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('admin_logged');
+            window.location.href = 'index.html';
+        }
+
+        // Gestione form
+        document.getElementById('formServizio').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                tipo: 'servizio',
+                codice: document.getElementById('serv_codice').value,
+                descrizione: document.getElementById('serv_descrizione').value,
+                costo: document.getElementById('serv_costo').value
+            };
+            const response = await fetch(API_BASE + 'admin_servizi.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            alert(result.message || result.error);
+            if (result.success) {
+                e.target.reset();
+                caricaListe();
+            }
+        });
+
+        document.getElementById('formPezzo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                tipo: 'pezzo',
+                codice: document.getElementById('pez_codice').value,
+                descrizione: document.getElementById('pez_descrizione').value,
+                costo: document.getElementById('pez_costo').value
+            };
+            const response = await fetch(API_BASE + 'admin_servizi.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            alert(result.message || result.error);
+            if (result.success) {
+                e.target.reset();
+                caricaListe();
+            }
+        });
+
+        document.getElementById('formAccessorio').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                tipo: 'accessorio',
+                codice: document.getElementById('acc_codice').value,
+                descrizione: document.getElementById('acc_descrizione').value,
+                costo: document.getElementById('acc_costo').value
+            };
+            const response = await fetch(API_BASE + 'admin_servizi.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            alert(result.message || result.error);
+            if (result.success) {
+                e.target.reset();
+                caricaListe();
+            }
+        });
+
+        async function elimina(tipo, codice) {
+            if (confirm(`Eliminare ${tipo} ${codice}?`)) {
+                const response = await fetch(API_BASE + 'admin_servizi.php', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tipo, codice })
+                });
+                const result = await response.json();
+                alert(result.message || result.error);
+                if (result.success) {
+                    caricaListe();
+                }
+            }
+        }
+
+        caricaListe();
+    </script>
+</body>
+</html>

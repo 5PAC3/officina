@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registra Admin</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Registra nuovo admin</h1>
+        </header>
+        <div class="search-section">
+            <form id="formAdmin">
+                <label>Username:</label>
+                <input type="text" id="username" required>
+                <label>Password:</label>
+                <input type="password" id="password" required>
+                <label>Nome:</label>
+                <input type="text" id="nome" required>
+                <label>Cognome:</label>
+                <input type="text" id="cognome" required>
+                <button type="submit" class="btn-primary">Registra</button>
+            </form>
+            <p id="msg" style="margin-top:15px;"></p>
+        </div>
+    </div>
+    <script>
+        const API_BASE = 'http://localhost/officina/api/';
+        
+        document.getElementById('formAdmin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                nome: document.getElementById('nome').value,
+                cognome: document.getElementById('cognome').value
+            };
+            
+            const response = await fetch(API_BASE + 'registra_admin.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            const msg = document.getElementById('msg');
+            msg.textContent = result.message || result.error;
+            msg.style.color = result.success ? 'green' : 'red';
+            
+            if (result.success) {
+                document.getElementById('formAdmin').reset();
+            }
+        });
+    </script>
+</body>
+</html>

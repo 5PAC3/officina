@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoAssist - Ricerca Officine</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Auto officina</h1>
+            <p>Trova l'officina più adatta alle tue esigenze</p>
+            <div class="admin-link">
+                <a href="login.html">Area Amministratori</a>
+            </div>
+        </header>
+
+        <div class="search-section">
+            <h2>Cerca officine compatibili</h2>
+            
+            <div class="search-type">
+                <label>Cosa cerchi?</label>
+                <select id="tipoRicerca">
+                    <option value="servizio">Servizio</option>
+                    <option value="pezzo">Pezzo di ricambio</option>
+                    <option value="accessorio">Accessorio</option>
+                </select>
+            </div>
+
+            <div class="search-item">
+                <label>Seleziona:</label>
+                <select id="elementoSelect">
+                    <option value="">-- Caricamento in corso --</option>
+                </select>
+            </div>
+
+            <button id="cercaBtn" class="btn-primary">Cerca officine compatibili</button>
+        </div>
+
+        <div id="risultati" class="results-section" style="display: none;">
+            <h3>Officine trovate</h3>
+            <div id="listaOfficine"></div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
+
+
+<!--
+Flusso Completo
+Utente visita index.html
+    ↓
+Seleziona "Servizio" → caricaSrvizi() → get_servizi.php
+    ↓
+Sceglie "Tagliando completo" (S001)
+    ↓
+Click "Cerca" → cercaOfficine() → ricerca.php
+    ↓
+PHP cerca in tabella "offre" WHERE servizio_codice = 'S001'
+    ↓
+Ritorna officine (MI001, RM002, NA003)
+    ↓
+JS genera card e mostra nell'HTML
+-->

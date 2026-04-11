@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Area Amministratori</h1>
+        </header>
+        <div class="search-section">
+            <form id="formLogin">
+                <label>Username:</label>
+                <input type="text" id="username" required>
+                <label>Password:</label>
+                <input type="password" id="password" required>
+                <button type="submit" class="btn-primary">Accedi</button>
+            </form>
+            <p id="msg" style="margin-top:15px;"></p>
+        </div>
+    </div>
+    <script>
+        const API_BASE = 'http://localhost/officina/api/';
+        
+        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const msg = document.getElementById('msg');
+            
+            const response = await fetch(API_BASE + 'login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                sessionStorage.setItem('admin_logged', 'true');
+                sessionStorage.setItem('admin_nome', data.nome || username);
+                window.location.href = 'dashboard.html';
+            } else {
+                msg.textContent = data.error || 'Accesso negato';
+                msg.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
