@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Nostre Officine</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/config.js"></script>
+    <style>
+        .officine-section { padding: 20px; }
+        .officina-card { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #3498db; }
+        .officina-card h3 { margin: 0 0 10px 0; color: #2c3e50; }
+        .officina-card p { margin: 5px 0; color: #666; }
+        .section-title { font-size: 14px; font-weight: bold; color: #3498db; margin: 15px 0 5px 0; text-transform: uppercase; }
+        .item-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .item-tag { background: white; padding: 5px 10px; border-radius: 3px; font-size: 13px; border: 1px solid #ddd; }
+        .item-tag .stock { color: #27ae60; font-weight: bold; margin-left: 5px; }
+        .contact-info { margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; }
+        .contact-info a { color: #3498db; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Le Nostre Officine</h1>
+            <p> Trova l'officina più vicina a te</p>
+            <div class="admin-link">
+                <a href="index.html">Home</a> | 
+                <a href="listino.html">Listino Prezzi</a>
+            </div>
+        </header>
+        
+        <div class="officine-section">
+            <div id="listaOfficine"></div>
+        </div>
+    </div>
+
+    <script>
+        caricaOfficine();
+        
+        async function caricaOfficine() {
+            const container = document.getElementById('listaOfficine');
+            container.innerHTML = '<p>Caricamento...</p>';
+            
+            try {
+                const response = await fetch(API_BASE + 'officine.php');
+                const data = await response.json();
+                
+                if (data.success && data.officine.length > 0) {
+                    container.innerHTML = '';
+                    data.officine.forEach(o => {
+                        const div = document.createElement('div');
+                        div.className = 'officina-card';
+                        
+                        let serviziHtml = o.servizi.length > 0 
+                            ? o.servizi.map(s => `<span class="item-tag">${s.descrizione}</span>`).join('')
+                            : '<em>Nessun servizio elencato</em>';
+                        
+                        let pezziHtml = o.pezzi.length > 0
+                            ? o.pezzi.map(p => `<span class="item-tag">${p.descrizione} <span class="stock">x${p.quantita}</span></span>`).join('')
+                            : '<em>Nessun pezzo disponibile</em>';
+                        
+                        let accessoriHtml = o.accessori.length > 0
+                            ? o.accessori.map(a => `<span class="item-tag">${a.descrizione} <span class="stock">x${a.quantita}</span></span>`).join('')
+                            : '<em>Nessun accessorio disponibile</em>';
+                        
+                        div.innerHTML = `
+                            <h3>${o.denominazione}</h3>
+                            <p><strong>Indirizzo:</strong> ${o.indirizzo}</p>
+                            <p><strong>Telefono:</strong> ${o.telefono || 'Non disponibile'}</p>
+                            <p><strong>Email:</strong> ${o.email || 'Non disponibile'}</p>
+                            
+                            <div class="section-title">Servizi Offerti</div>
+                            <div class="item-list">${serviziHtml}</div>
+                            
+                            <div class="section-title">Pezzi di Ricambio (disponibilità)</div>
+                            <div class="item-list">${pezziHtml}</div>
+                            
+                            <div class="section-title">Accessori (disponibilità)</div>
+                            <div class="item-list">${accessoriHtml}</div>
+                        `;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<p>Nessuna officina trovata</p>';
+                }
+            } catch (e) {
+                container.innerHTML = '<p style="color:red">Errore nel caricamento</p>';
+                console.error(e);
+            }
+        }
+    </script>
+</body>
+</html>

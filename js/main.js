@@ -49,6 +49,7 @@ async function getServizi() {
 async function cercaOfficine() {
     const tipo = tipoRicerca.value;
     const codice = elementoSelect.value;
+    const mostraTutti = document.getElementById('mostraTutti').checked;
     
     if (!codice) {
         alert('Seleziona un elemento valido');
@@ -66,7 +67,8 @@ async function cercaOfficine() {
             },
             body: JSON.stringify({
                 tipo: tipo,
-                codice: codice
+                codice: codice,
+                mostra_tutti: mostraTutti
             })
         });
         

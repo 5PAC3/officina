@@ -14,6 +14,8 @@
             <h1>Auto officina</h1>
             <p>Trova l'officina più adatta alle tue esigenze</p>
             <div class="admin-link">
+                <a href="listino.html">Listino Prezzi</a> | 
+                <a href="officine.html">Officine</a> | 
                 <a href="login.html">Area Amministratori</a> | 
                 <a href="login_cliente.html">Area Clienti</a>
             </div>
@@ -39,6 +41,10 @@
             </div>
 
             <button id="cercaBtn" class="btn-primary">Cerca officine compatibili</button>
+                <label style="margin-left: 15px; display: inline-flex; align-items: center; gap: 5px;">
+                    <input type="checkbox" id="mostraTutti">
+                    Mostra anche non disponibili
+                </label>
         </div>
 
         <div id="risultati" class="results-section" style="display: none;">

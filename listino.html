@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listino Prezzi - Auto Officina</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/config.js"></script>
+    <style>
+        .listino-section { padding: 20px; }
+        .listino-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .listino-tab { padding: 12px 24px; background: #f0f0f0; border: none; cursor: pointer; border-radius: 5px; font-size: 16px; }
+        .listino-tab.active { background: #3498db; color: white; }
+        .listino-content { display: none; }
+        .listino-content.active { display: block; }
+        .price-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .price-table th, .price-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .price-table th { background: #f8f9fa; font-weight: bold; }
+        .price-table tr:hover { background: #f8f9fa; }
+        .price-value { font-weight: bold; color: #27ae60; }
+        .back-link { margin-bottom: 20px; }
+        .back-link a { color: #3498db; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Listino Prezzi</h1>
+            <p>I nostri servizi e prodotti</p>
+            <div class="admin-link">
+                <a href="index.html">Torna alla home</a>
+            </div>
+        </header>
+        
+        <div class="listino-section">
+            <div class="listino-tabs">
+                <button class="listino-tab active" onclick="showTab('servizi')">Servizi</button>
+                <button class="listino-tab" onclick="showTab('pezzi')">Pezzi di Ricambio</button>
+                <button class="listino-tab" onclick="showTab('accessori')">Accessori</button>
+            </div>
+            
+            <div id="servizi-content" class="listino-content active">
+                <h3>Servizi Offerti</h3>
+                <table class="price-table">
+                    <thead>
+                        <tr>
+                            <th>Codice</th>
+                            <th>Descrizione</th>
+                            <th>Costo Orario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaServizi"></tbody>
+                </table>
+            </div>
+            
+            <div id="pezzi-content" class="listino-content">
+                <h3>Pezzi di Ricambio</h3>
+                <table class="price-table">
+                    <thead>
+                        <tr>
+                            <th>Codice</th>
+                            <th>Descrizione</th>
+                            <th>Costo Unitario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaPezzi"></tbody>
+                </table>
+            </div>
+            
+            <div id="accessori-content" class="listino-content">
+                <h3>Accessori</h3>
+                <table class="price-table">
+                    <thead>
+                        <tr>
+                            <th>Codice</th>
+                            <th>Descrizione</th>
+                            <th>Costo Unitario</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaAccessori"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        caricaListe();
+        
+        async function caricaListe() {
+            await caricaServizi();
+            await caricaPezzi();
+            await caricaAccessori();
+        }
+        
+        async function caricaServizi() {
+            try {
+                const response = await fetch(API_BASE + 'get_servizi.php');
+                const data = await response.json();
+                const tbody = document.getElementById('listaServizi');
+                
+                if (data.success && data.elementi.length > 0) {
+                    tbody.innerHTML = data.elementi.map(s => `
+                        <tr>
+                            <td>${s.codice}</td>
+                            <td>${s.descrizione}</td>
+                            <td class="price-value">€${parseFloat(s.costo_orario).toFixed(2)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3">Nessun servizio disponibile</td></tr>';
+                }
+            } catch (e) {
+                console.error('Errore:', e);
+            }
+        }
+        
+        async function caricaPezzi() {
+            try {
+                const response = await fetch(API_BASE + 'get_pezzi.php');
+                const data = await response.json();
+                const tbody = document.getElementById('listaPezzi');
+                
+                if (data.success && data.elementi.length > 0) {
+                    tbody.innerHTML = data.elementi.map(p => `
+                        <tr>
+                            <td>${p.codice}</td>
+                            <td>${p.descrizione}</td>
+                            <td class="price-value">€${parseFloat(p.costo_unitario).toFixed(2)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3">Nessun pezzo disponibile</td></tr>';
+                }
+            } catch (e) {
+                console.error('Errore:', e);
+            }
+        }
+        
+        async function caricaAccessori() {
+            try {
+                const response = await fetch(API_BASE + 'get_accessori.php');
+                const data = await response.json();
+                const tbody = document.getElementById('listaAccessori');
+                
+                if (data.success && data.elementi.length > 0) {
+                    tbody.innerHTML = data.elementi.map(a => `
+                        <tr>
+                            <td>${a.codice}</td>
+                            <td>${a.descrizione}</td>
+                            <td class="price-value">€${parseFloat(a.costo_unitario).toFixed(2)}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="3">Nessun accessorio disponibile</td></tr>';
+                }
+            } catch (e) {
+                console.error('Errore:', e);
+            }
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.listino-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.listino-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-content').classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -80,6 +80,7 @@
                 <button class="tab-btn active" onclick="showTab('servizi')">Servizi</button>
                 <button class="tab-btn" onclick="showTab('pezzi')">Pezzi Ricambio</button>
                 <button class="tab-btn" onclick="showTab('accessori')">Accessori</button>
+                <button class="tab-btn" onclick="showTab('officine')">Officine</button>
             </div>
 
             <!-- Form Servizi -->
@@ -134,6 +135,36 @@
                     <button type="submit" class="btn-primary">Aggiungi Accessorio</button>
                 </form>
                 <div id="listaAccessori" class="item-list"></div>
+            </div>
+
+            <!-- Officine -->
+            <div id="officine-tab" class="tab-content">
+                <h3>Associa Servizi/Pezzi alle Officine</h3>
+                <div class="form-group">
+                    <label>Seleziona Officina:</label>
+                    <select id="officinaSelect" onchange="caricaAssociazioni()">
+                        <option value="">-- Scegli un'officina --</option>
+                    </select>
+                </div>
+                <div id="dettagliOfficina" style="display:none;">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="showAssTab('servizi')">Servizi</button>
+                        <button class="tab-btn" onclick="showAssTab('pezzi')">Pezzi</button>
+                        <button class="tab-btn" onclick="showAssTab('accessori')">Accessori</button>
+                    </div>
+                    <div id="ass-servizi" class="tab-content active">
+                        <h4>Servizi Offerti</h4>
+                        <div id="listaServiziOfferti"></div>
+                    </div>
+                    <div id="ass-pezzi" class="tab-content">
+                        <h4>Pezzi di Ricambio</h4>
+                        <div id="listaPezziOfferti"></div>
+                    </div>
+                    <div id="ass-accessori" class="tab-content">
+                        <h4>Accessori</h4>
+                        <div id="listaAccessoriOfferti"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -319,6 +350,139 @@
                     caricaListe();
                 }
             }
+        }
+
+        // Officine
+        async function caricaSelectOfficine() {
+            try {
+                const response = await fetch(API_BASE + 'offre.php?tipo=officine');
+                const data = await response.json();
+                if (data.success) {
+                    const select = document.getElementById('officinaSelect');
+                    data.officine.forEach(o => {
+                        const opt = document.createElement('option');
+                        opt.value = o.codice;
+                        opt.textContent = o.denominazione;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+        caricaSelectOfficine();
+
+        async function caricaAssociazioni() {
+            const officina = document.getElementById('officinaSelect').value;
+            const container = document.getElementById('dettagliOfficina');
+            container.style.display = officina ? 'block' : 'none';
+            if (!officina) return;
+
+            try {
+                const response = await fetch(API_BASE + 'offre.php?tipo=associazioni&officina=' + officina);
+                const data = await response.json();
+                if (data.success) {
+                    renderServiziOfficina(data.servizi);
+                    renderPezziOfficina(data.pezzi);
+                    renderAccessoriOfficina(data.accessori);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function renderServiziOfficina(servizi) {
+            const container = document.getElementById('listaServiziOfferti');
+            container.innerHTML = servizi.map(s => `
+                <div class="item">
+                    <div><strong>${s.codice}</strong> - ${s.descrizione} (€${s.costo_orario}/ora)</div>
+                    <button class="${s.associato ? 'delete-btn' : 'btn-primary'}" 
+                            style="${s.associato ? '' : 'background:#27ae60;'}"
+                            onclick="toggleServizio('${s.codice}', ${s.associato})">
+                        ${s.associato ? 'Rimuovi' : 'Associa'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderPezziOfficina(pezzi) {
+            const container = document.getElementById('listaPezziOfferti');
+            const qta = prompt('Quantità iniziale per questo pezzo:', '10');
+            const quantita = qta ? parseInt(qta) : 10;
+            container.innerHTML = pezzi.map(p => `
+                <div class="item">
+                    <div><strong>${p.codice}</strong> - ${p.descrizione} (€${p.costo_unitario}) - <span style="color:${p.quantita>0?'green':'red'}">${p.quantita} in magazzino</span></div>
+                    <button class="${p.associato ? 'delete-btn' : 'btn-primary'}" 
+                            style="${p.associato ? '' : 'background:#27ae60;'}"
+                            onclick="togglePezzo('${p.codice}', ${p.associato}, ${p.associato?0:quantita})">
+                        ${p.associato ? 'Rimuovi' : 'Associa'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderAccessoriOfficina(accessori) {
+            const container = document.getElementById('listaAccessoriOfferti');
+            const qta = prompt('Quantità iniziale per questo accessorio:', '5');
+            const quantita = qta ? parseInt(qta) : 5;
+            container.innerHTML = accessori.map(a => `
+                <div class="item">
+                    <div><strong>${a.codice}</strong> - ${a.descrizione} (€${a.costo_unitario}) - <span style="color:${a.quantita>0?'green':'red'}">${a.quantita} in magazzino</span></div>
+                    <button class="${a.associato ? 'delete-btn' : 'btn-primary'}" 
+                            style="${a.associato ? '' : 'background:#27ae60;'}"
+                            onclick="toggleAccessorio('${a.codice}', ${a.associato}, ${a.associato?0:quantita})">
+                        ${a.associato ? 'Rimuovi' : 'Associa'}
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function toggleServizio(codice, giaAssociato) {
+            const officina = document.getElementById('officinaSelect').value;
+            const action = giaAssociato ? 'rimuovi_servizio' : 'associa_servizio';
+            try {
+                const response = await fetch(API_BASE + 'offre.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, officina, codice })
+                });
+                const data = await response.json();
+                alert(data.message);
+                caricaAssociazioni();
+            } catch (e) { alert('Errore'); }
+        }
+
+        async function togglePezzo(codice, giaAssociato, quantita) {
+            const officina = document.getElementById('officinaSelect').value;
+            const action = giaAssociato ? 'rimuovi_pezzo' : 'associa_pezzo';
+            try {
+                const response = await fetch(API_BASE + 'offre.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, officina, codice, quantita })
+                });
+                const data = await response.json();
+                alert(data.message);
+                caricaAssociazioni();
+            } catch (e) { alert('Errore'); }
+        }
+
+        async function toggleAccessorio(codice, giaAssociato, quantita) {
+            const officina = document.getElementById('officinaSelect').value;
+            const action = giaAssociato ? 'rimuovi_accessorio' : 'associa_accessorio';
+            try {
+                const response = await fetch(API_BASE + 'offre.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, officina, codice, quantita })
+                });
+                const data = await response.json();
+                alert(data.message);
+                caricaAssociazioni();
+            } catch (e) { alert('Errore'); }
+        }
+
+        function showAssTab(tab) {
+            document.getElementById('ass-servizi').classList.remove('active');
+            document.getElementById('ass-pezzi').classList.remove('active');
+            document.getElementById('ass-accessori').classList.remove('active');
+            document.getElementById('ass-' + tab).classList.add('active');
         }
 
         caricaListe();
