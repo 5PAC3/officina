@@ -6,6 +6,7 @@
     <title>Area Cliente</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -21,8 +22,6 @@
         </div>
     </div>
     <script>
-        const API_BASE = 'http://localhost/officina/api/';
-        
         if (!sessionStorage.getItem('logged') || sessionStorage.getItem('user_ruolo') !== 'cliente') {
             window.location.href = 'login_cliente.html';
         }

@@ -1,6 +1,3 @@
-// URL dell'API
-const API_BASE = 'http://localhost/officina/api/';
-
 // Elementi DOM
 const tipoRicerca = document.getElementById('tipoRicerca');
 const elementoSelect = document.getElementById('elementoSelect');

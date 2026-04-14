@@ -25,6 +25,7 @@
             font-size: 12px;
         }
     </style>
+    <script src="js/config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -40,8 +41,6 @@
         </div>
     </div>
     <script>
-        const API_BASE = 'http://localhost/officina/api/';
-        
         if (!sessionStorage.getItem('logged') || sessionStorage.getItem('user_ruolo') !== 'tecnico') {
             window.location.href = 'login.html';
         }

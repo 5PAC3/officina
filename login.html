@@ -6,6 +6,7 @@
     <title>Login Admin</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -24,8 +25,6 @@
         </div>
     </div>
     <script>
-        const API_BASE = 'http://localhost/officina/api/';
-        
         document.getElementById('formLogin').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value;
