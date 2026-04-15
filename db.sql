@@ -55,7 +55,10 @@ CREATE TABLE cliente (
     nome VARCHAR(50) NOT NULL,
     telefono VARCHAR(20),
     email VARCHAR(100),
-    password VARCHAR(255)
+    password VARCHAR(255),
+    codiceOTP VARCHAR(255),
+    scadenzaOTP DATE,
+    isActive BOOLEAN
 );
 
 -- Autoveicoli
