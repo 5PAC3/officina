@@ -13,3 +13,8 @@ Web app per la gestione di officine automobilistiche, ricerca servizi e ricambi.
 - [x] Elenco officine con magazzino (pubblico)
 - [x] UI per associare servizi/pezzi alle officine
 - [x] Supporto servizi/pezzi non associati a officine
+- [ ] Aggiungere in modo decente al readme che viene utilizzato PHPMailer
+- [ ] Modifiche al DB per mails codici OTP (UUID) verifica, account attivato si/no...
+- [ ] Funzione php per creazione di codici OTP
+- [ ] Pagina conferma verify
+- [ ] Pagina di reset password 

@@ -25,7 +25,7 @@ try {
 
     //Recipients
     $mail->setFrom('esercizio-5binf@ismonnet.eu', 'NoReply');
-    $mail->addAddress('pozzi.luca@ismonnet.eu');     //Add a recipient
+    $mail->addAddress('');     //Add a recipient
     //$mail->addReplyTo('info@example.com', 'Information');
     //$mail->addCC('cc@example.com');
     //$mail->addBCC('bcc@example.com');
