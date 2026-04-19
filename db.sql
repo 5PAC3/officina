@@ -57,7 +57,7 @@ CREATE TABLE cliente (
     email VARCHAR(100),
     password VARCHAR(255),
     codiceOTP VARCHAR(255),
-    scadenzaOTP DATE,
+    scadenzaOTP DATETIME,
     isActive BOOLEAN
 );
 
