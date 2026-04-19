@@ -49,5 +49,16 @@ class OTP {
         $stmt->close();
         return $ok;
     }
+
+    public static function aggiornaPassword(string $email, string $password): bool {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $db = Database::getInstance();
+        $conn = $db->getConnection();
+        $stmt = $conn->prepare("UPDATE cliente SET password = ?, codiceOTP = NULL, scadenzaOTP = NULL WHERE email = ?");
+        $stmt->bind_param("ss", $hash, $email);
+        $ok = $stmt->execute();
+        $stmt->close();
+        return $ok;
+    }
 }
 ?>

@@ -23,4 +23,4 @@ Web app per la gestione di officine automobilistiche, ricerca servizi e ricambi.
 - [x] Modifiche al DB per mails codici OTP (UUID) verifica, account attivato si/no...
 - [x] Funzione php per creazione di codici OTP
 - [x] Pagina conferma verify
-- [ ] Pagina di reset password 
+- [x] Pagina di reset password 
