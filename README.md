@@ -2,6 +2,48 @@
 
 Web app per la gestione di officine automobilistiche, ricerca servizi e ricambi.
 
+## Stack
+
+- Backend: PHP 8.x (Vanilla, no framework)
+- Database: MySQL
+- Frontend: HTML/CSS/JS vanilla
+- Auth: PHPMailer (Gmail SMTP)
+
+## Struttura
+
+```
+/api/           endpoint PHP (17 file)
+/classes/       database.php, mailer.php, otp.php
+/configs/       config.php
+/css/           style.css
+/js/            main.js, config.js
+*.html          pagine frontend
+db.sql          schema + dati
+```
+
+## Database (13 tabelle)
+
+- `officina` - anagrafica officine
+- `dipendente` - admin/tecnico/magazziniere (ruolo + hash password)
+- `cliente` - clienti registrati (OTP, isActive)
+- `autoveicolo` - veicoli clienti
+- `servizio` - servizi offerti
+- `pezzo_ricambio` - pezzi di ricambio
+- `accessorio` - accessori
+- `offre` - servizi per officina
+- `presenza_pezzo` / `presenza_accessorio` - magazzino per officina
+- `intervento` - interventi effettuati
+- `comprende_servizio` / `utilizza_pezzo` / `utilizza_accessorio` - dettaglio intervento
+
+## Ruoli
+
+| Ruolo | Permessi |
+|-------|----------|
+| admin | Gestione servizi/pezzi, dashboard completa |
+| tecnico | Visualizza interventi assegnati |
+| magazziniere | Gestione scorte magazzino |
+| cliente | Registrazione, visualizza propri veicoli |
+
 ## Dipendenze
 
 - [PHPMailer](https://github.com/PHPMailer/PHPMailer) (v6.x) - Libreria per l'invio email
