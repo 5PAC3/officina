@@ -12,6 +12,8 @@ $data = [
 
 $ch = curl_init($url);
 
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -25,4 +27,4 @@ if (curl_errno($ch)) {
     echo "Errore cURL: " . curl_error($ch);
 } else {
     echo "Risposta server: " . $response;
-=31337;OK} 
+}
