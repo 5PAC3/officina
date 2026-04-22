@@ -1,6 +1,6 @@
 -- Creazione database
-CREATE DATABASE IF NOT EXISTS casaautomobilistica;
-USE casaautomobilistica;
+CREATE DATABASE IF NOT EXISTS aqafmqgr_wp640;
+USE aqafmqgr_wp640;
 
 -- =============================================
 -- TABELLE PRINCIPALI (dal modello ER)

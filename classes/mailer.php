@@ -1,35 +1,24 @@
-<?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
-
-require_once __DIR__ . '/../vendor/PHPMailer-master/src/Exception.php';
-require_once __DIR__ . '/../vendor/PHPMailer-master/src/PHPMailer.php';
-require_once __DIR__ . '/../vendor/PHPMailer-master/src/SMTP.php';
-
 class Mailer {
+    private const API_URL = "https://agora.ismonnet.it/sendMail/send.php";
+    private const MAIL_INVIO = "esercizio-5binf@ismonnet.eu";
+
     public static function invia(string $to, string $subject, string $body): bool {
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'esercizio-5binf@ismonnet.eu';
-            $mail->Password = 'hjmr bcab tegm oshp';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            $mail->Port = 465;
+        $ch = curl_init(self::API_URL);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+            "mail_invio" => self::MAIL_INVIO,
+            "mail_destinazione" => $to,
+            "oggetto" => $subject,
+            "body" => $body
+        ]));
 
-            $mail->setFrom('esercizio-5binf@ismonnet.eu', 'Officina');
-            $mail->addAddress($to);
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body = $body;
-            $mail->AltBody = strip_tags($body);
+        $response = curl_exec($ch);
+        $ok = !curl_errno($ch) && $response !== false;
+        curl_close($ch);
 
-            return $mail->send();
-        } catch (Exception $e) {
-            return false;
-        }
+        return $ok;
     }
 }
 ?>
