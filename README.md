@@ -16,7 +16,7 @@ Web app per la gestione di officine automobilistiche, ricerca servizi e ricambi.
 /classes/       database.php, mailer.php, otp.php
 /configs/       config.php
 /css/           style.css
-/js/            main.js, config.php (generated from .env)
+/js/            main.js, config.js (generato da .env)
 *.html          pagine frontend
 db.sql          schema + dati
 ```
