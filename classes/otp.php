@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/../configs/config.php';
 
 class OTP {
     public static function genera(): string {
@@ -19,7 +20,7 @@ class OTP {
         if (!$ok) return false;
 
         require_once __DIR__ . '/mailer.php';
-        $link = "http://localhost/verify.php?email=$email&codice=$codice";
+        $link = APP_URL . "/verify.php?email=$email&codice=$codice";
         $oggetto = $tipo === 'reset' ? 'Reset Password' : 'Conferma Registrazione';
         $messaggio = $tipo === 'reset'
             ? "Clicca per resettare la password: <a href='$link'>$link</a>"
