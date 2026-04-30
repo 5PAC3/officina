@@ -31,6 +31,7 @@ $result = $stmt->get_result();
 if ($row = $result->fetch_assoc()) {
     if (password_verify($password, $row['password'])) {
         session_start();
+        session_regenerate_id(true);
         $_SESSION['logged'] = true;
         $_SESSION['user_id'] = $row['id'];
         $_SESSION['user_nome'] = $row['nome'];

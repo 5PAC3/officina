@@ -407,7 +407,7 @@ class POP3
 
     /**
      * Checks the POP3 server response.
-     * Looks for +OK or -ERR.
+     * Looks for for +OK or -ERR.
      *
      * @param string $string
      *

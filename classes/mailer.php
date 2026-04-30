@@ -1,24 +1,35 @@
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
 class Mailer {
-    private const API_URL = "https://agora.ismonnet.it/sendMail/send.php";
-    private const MAIL_INVIO = "esercizio-5binf@ismonnet.eu";
-
     public static function invia(string $to, string $subject, string $body): bool {
-        $ch = curl_init(self::API_URL);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            "mail_invio" => self::MAIL_INVIO,
-            "mail_destinazione" => $to,
-            "oggetto" => $subject,
-            "body" => $body
-        ]));
+        $mail = new PHPMailer(true);
 
-        $response = curl_exec($ch);
-        $ok = !curl_errno($ch) && $response !== false;
-        curl_close($ch);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = $_ENV['SMTP_HOST'] ?? 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $_ENV['SMTP_USER'] ?? '';
+            $mail->Password   = $_ENV['SMTP_PASS'] ?? '';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            $mail->Port       = $_ENV['SMTP_PORT'] ?? 465;
 
-        return $ok;
+            $mail->setFrom($_ENV['SMTP_FROM'] ?? '', $_ENV['SMTP_FROM_NAME'] ?? 'NoReply');
+            $mail->addAddress($to);
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $body;
+            $mail->AltBody = strip_tags($body);
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Mailer Error: " . $mail->ErrorInfo);
+            return false;
+        }
     }
 }
 ?>

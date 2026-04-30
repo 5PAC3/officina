@@ -12,7 +12,9 @@ require_once '../classes/database.php';
 
 session_start();
 
-if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
+// Verify user is logged in and has admin role
+if (!isset($_SESSION['logged']) || $_SESSION['logged'] !== true || $_SESSION['user_ruolo'] !== 'admin') {
+    http_response_code(403);
     echo json_encode(['error' => 'Accesso non autorizzato']);
     exit;
 }
@@ -43,7 +45,9 @@ switch($method) {
         if ($stmt->execute()) {
             echo json_encode(['success' => true, 'message' => ucfirst($tipo) . ' aggiunto']);
         } else {
-            echo json_encode(['error' => 'Errore: ' . $conn->error]);
+            http_response_code(500);
+            echo json_encode(['error' => 'Errore interno']);
+            error_log('DB Error: ' . $conn->error);
         }
         $stmt->close();
         break;
@@ -63,7 +67,9 @@ switch($method) {
         if ($stmt->execute()) {
             echo json_encode(['success' => true, 'message' => ucfirst($tipo) . ' eliminato']);
         } else {
-            echo json_encode(['error' => 'Errore: ' . $conn->error]);
+            http_response_code(500);
+            echo json_encode(['error' => 'Errore interno']);
+            error_log('DB Error: ' . $conn->error);
         }
         $stmt->close();
         break;

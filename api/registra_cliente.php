@@ -30,8 +30,16 @@ $hash = password_hash($password, PASSWORD_DEFAULT);
 $stmt = $conn->prepare("INSERT INTO cliente (codice, nome, cognome, email, telefono, password) VALUES (?, ?, ?, ?, ?, ?)");
 $stmt->bind_param("ssssss", $codice, $nome, $cognome, $email, $telefono, $hash);
 
+require_once '../classes/otp.php';
+
 if ($stmt->execute()) {
-    echo json_encode(['success' => true, 'message' => 'Registrazione effettuata', 'codice' => $codice]);
+    $stmt->close();
+    $codiceOTP = OTP::genera();
+    if (OTP::invia($email, $codiceOTP, 'verify')) {
+        echo json_encode(['success' => true, 'message' => 'Registrazione effettuata. Controlla la tua email per verificare l\'account.', 'codice' => $codice]);
+    } else {
+        echo json_encode(['success' => true, 'message' => 'Registrazione effettuata ma invio email fallito. Contatta l\'assistenza.', 'codice' => $codice]);
+    }
 } else {
     echo json_encode(['success' => false, 'error' => 'Errore: ' . $conn->error]);
 }

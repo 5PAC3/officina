@@ -6,6 +6,16 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../classes/database.php';
 
+session_start();
+
+// Verify user is logged in and has appropriate role
+if (!isset($_SESSION['logged']) || $_SESSION['logged'] !== true || 
+    !in_array($_SESSION['user_ruolo'], ['admin', 'magazziniere'])) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Accesso non autorizzato']);
+    exit;
+}
+
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
@@ -37,8 +47,10 @@ if ($method === 'GET') {
     if ($tipo === 'associazioni') {
         $officina = $_GET['officina'] ?? '';
         
+        // Get services with association status
         $stmt = $conn->prepare("
-            SELECT s.codice, s.descrizione, s.costo_orario, CASE WHEN o.officina_codice IS NOT NULL THEN 1 ELSE 0 END as associato
+            SELECT s.codice, s.descrizione, s.costo_orario, 
+                   CASE WHEN o.officina_codice IS NOT NULL THEN 1 ELSE 0 END as associato
             FROM servizio s
             LEFT JOIN offre o ON s.codice = o.servizio_codice AND o.officina_codice = ?
             ORDER BY s.codice
@@ -51,6 +63,7 @@ if ($method === 'GET') {
             $servizi[] = $row;
         }
         
+        // Get pieces with association status
         $stmt = $conn->prepare("
             SELECT p.codice, p.descrizione, p.costo_unitario, COALESCE(pp.quantita, 0) as quantita,
                    CASE WHEN pp.officina_codice IS NOT NULL THEN 1 ELSE 0 END as associato
@@ -66,6 +79,7 @@ if ($method === 'GET') {
             $pezzi[] = $row;
         }
         
+        // Get accessories with association status
         $stmt = $conn->prepare("
             SELECT a.codice, a.descrizione, a.costo_unitario, COALESCE(pa.quantita, 0) as quantita,
                    CASE WHEN pa.officina_codice IS NOT NULL THEN 1 ELSE 0 END as associato
@@ -86,6 +100,7 @@ if ($method === 'GET') {
         exit;
     }
     
+    http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Tipo non riconosciuto']);
     exit;
 }
@@ -100,9 +115,14 @@ if ($method === 'POST') {
         
         $stmt = $conn->prepare("INSERT INTO offre (officina_codice, servizio_codice) VALUES (?, ?)");
         $stmt->bind_param("ss", $officina, $servizio);
-        $stmt->execute();
         
-        echo json_encode(['success' => true, 'message' => 'Servizio associato']);
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Servizio associato']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Errore interno']);
+            error_log('DB Error: ' . $conn->error);
+        }
         $stmt->close();
         exit;
     }
@@ -113,9 +133,14 @@ if ($method === 'POST') {
         
         $stmt = $conn->prepare("DELETE FROM offre WHERE officina_codice = ? AND servizio_codice = ?");
         $stmt->bind_param("ss", $officina, $servizio);
-        $stmt->execute();
         
-        echo json_encode(['success' => true, 'message' => 'Servizio rimosso']);
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Servizio rimosso']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Errore interno']);
+            error_log('DB Error: ' . $conn->error);
+        }
         $stmt->close();
         exit;
     }
@@ -131,9 +156,14 @@ if ($method === 'POST') {
             ON DUPLICATE KEY UPDATE quantita = VALUES(quantita)
         ");
         $stmt->bind_param("ssi", $officina, $pezzo, $quantita);
-        $stmt->execute();
         
-        echo json_encode(['success' => true, 'message' => 'Pezzo associato']);
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Pezzo associato']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Errore interno']);
+            error_log('DB Error: ' . $conn->error);
+        }
         $stmt->close();
         exit;
     }
@@ -144,9 +174,14 @@ if ($method === 'POST') {
         
         $stmt = $conn->prepare("DELETE FROM presenza_pezzo WHERE officina_codice = ? AND pezzo_codice = ?");
         $stmt->bind_param("ss", $officina, $pezzo);
-        $stmt->execute();
         
-        echo json_encode(['success' => true, 'message' => 'Pezzo rimosso']);
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Pezzo rimosso']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Errore interno']);
+            error_log('DB Error: ' . $conn->error);
+        }
         $stmt->close();
         exit;
     }
@@ -162,9 +197,14 @@ if ($method === 'POST') {
             ON DUPLICATE KEY UPDATE quantita = VALUES(quantita)
         ");
         $stmt->bind_param("ssi", $officina, $accessorio, $quantita);
-        $stmt->execute();
         
-        echo json_encode(['success' => true, 'message' => 'Accessorio associato']);
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Accessorio associato']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Errore interno']);
+            error_log('DB Error: ' . $conn->error);
+        }
         $stmt->close();
         exit;
     }
@@ -175,13 +215,19 @@ if ($method === 'POST') {
         
         $stmt = $conn->prepare("DELETE FROM presenza_accessorio WHERE officina_codice = ? AND accessorio_codice = ?");
         $stmt->bind_param("ss", $officina, $accessorio);
-        $stmt->execute();
         
-        echo json_encode(['success' => true, 'message' => 'Accessorio rimosso']);
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true, 'message' => 'Accessorio rimosso']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Errore interno']);
+            error_log('DB Error: ' . $conn->error);
+        }
         $stmt->close();
         exit;
     }
 }
 
+http_response_code(400);
 echo json_encode(['success' => false, 'error' => 'Azione non riconosciuta']);
 ?>

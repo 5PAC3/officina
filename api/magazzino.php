@@ -6,6 +6,16 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../classes/database.php';
 
+session_start();
+
+// Allow access to magazziniere and admin roles
+if (!isset($_SESSION['logged']) || $_SESSION['logged'] !== true || 
+    !in_array($_SESSION['user_ruolo'], ['magazziniere', 'admin'])) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Accesso non autorizzato']);
+    exit;
+}
+
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
@@ -98,9 +108,14 @@ if ($method === 'POST' && $action === 'aggiorna_pezzo') {
         ON DUPLICATE KEY UPDATE quantita = VALUES(quantita)
     ");
     $stmt->bind_param("ssi", $officina_codice, $pezzo_codice, $quantita);
-    $stmt->execute();
     
-    echo json_encode(['success' => true, 'message' => 'Pezzo aggiornato']);
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Pezzo aggiornato']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Errore interno']);
+        error_log('DB Error: ' . $conn->error);
+    }
     $stmt->close();
     exit;
 }
@@ -116,9 +131,14 @@ if ($method === 'POST' && $action === 'aggiorna_accessorio') {
         ON DUPLICATE KEY UPDATE quantita = VALUES(quantita)
     ");
     $stmt->bind_param("ssi", $officina_codice, $accessorio_codice, $quantita);
-    $stmt->execute();
     
-    echo json_encode(['success' => true, 'message' => 'Accessorio aggiornato']);
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Accessorio aggiornato']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Errore interno']);
+        error_log('DB Error: ' . $conn->error);
+    }
     $stmt->close();
     exit;
 }
@@ -133,9 +153,14 @@ if ($method === 'POST' && $action === 'associa_pezzo') {
         VALUES (?, ?, ?)
     ");
     $stmt->bind_param("ssi", $officina_codice, $pezzo_codice, $quantita);
-    $stmt->execute();
     
-    echo json_encode(['success' => true, 'message' => 'Pezzo associato']);
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Pezzo associato']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Errore interno']);
+        error_log('DB Error: ' . $conn->error);
+    }
     $stmt->close();
     exit;
 }
@@ -150,9 +175,14 @@ if ($method === 'POST' && $action === 'associa_accessorio') {
         VALUES (?, ?, ?)
     ");
     $stmt->bind_param("ssi", $officina_codice, $accessorio_codice, $quantita);
-    $stmt->execute();
     
-    echo json_encode(['success' => true, 'message' => 'Accessorio associato']);
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Accessorio associato']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Errore interno']);
+        error_log('DB Error: ' . $conn->error);
+    }
     $stmt->close();
     exit;
 }
@@ -169,12 +199,18 @@ if ($method === 'DELETE') {
         $stmt = $conn->prepare("DELETE FROM presenza_accessorio WHERE officina_codice = ? AND accessorio_codice = ?");
         $stmt->bind_param("ss", $officina, $codice);
     }
-    $stmt->execute();
     
-    echo json_encode(['success' => true, 'message' => 'Associazione rimossa']);
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Associazione rimossa']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Errore interno']);
+        error_log('DB Error: ' . $conn->error);
+    }
     $stmt->close();
     exit;
 }
 
+http_response_code(400);
 echo json_encode(['success' => false, 'error' => 'Azione non riconosciuta']);
 ?>
