@@ -6,7 +6,6 @@
     <title>Area Magazziniere</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/config.js"></script>
     <style>
         .magazzino-container { padding: 20px; }
         .officina-selector { margin-bottom: 20px; }
@@ -27,6 +26,13 @@
         .empty-badge { background: #e74c3c; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
         .stock-badge { background: #27ae60; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
         .low-badge { background: #f39c12; color: white; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+        .nota-input { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .storico-table { width: 100%; border-collapse: collapse; }
+        .storico-table th, .storico-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        .storico-table th { background: #f8f9fa; font-weight: 600; }
+        .operazione-carico { color: #27ae60; font-weight: bold; }
+        .operazione-scarico { color: #e74c3c; font-weight: bold; }
+        .operazione-intervento { color: #3498db; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -39,16 +45,15 @@
         
         <div class="magazzino-container">
             <div class="officina-selector">
-                <label>Seleziona Officina:</label><br>
-                <select id="officinaSelect" onchange="caricaMagazzino()">
-                    <option value="">-- Scegli un'officina --</option>
-                </select>
+                <label>Officina:</label><br>
+                <span id="officinaLabel" style="font-weight: bold;"></span>
             </div>
             
             <div id="dettagliOfficina" style="display:none;">
                 <div class="tabs">
                     <button class="tab-btn active" onclick="showTab('pezzi')">Pezzi di Ricambio</button>
                     <button class="tab-btn" onclick="showTab('accessori')">Accessori</button>
+                    <button class="tab-btn" onclick="showTab('storico')">Storico Movimenti</button>
                 </div>
                 
                 <div id="pezzi-tab" class="tab-content active">
@@ -59,6 +64,11 @@
                 <div id="accessori-tab" class="tab-content">
                     <h3>Accessori</h3>
                     <div id="listaAccessori"></div>
+                </div>
+                
+                <div id="storico-tab" class="tab-content">
+                    <h3>Storico Movimenti</h3>
+                    <div id="listaStorico"></div>
                 </div>
             </div>
         </div>
@@ -83,31 +93,18 @@
             try {
                 const response = await fetch(API_BASE + 'magazzino.php');
                 const data = await response.json();
-                if (data.success) {
-                    const select = document.getElementById('officinaSelect');
-                    data.officine.forEach(o => {
-                        const opt = document.createElement('option');
-                        opt.value = o.codice;
-                        opt.textContent = o.denominazione + ` (${o.tot_pezzi} pezzi, ${o.tot_accessori} accessori)`;
-                        select.appendChild(opt);
-                    });
+                if (data.success && data.officine.length > 0) {
+                    const officina = data.officine[0];
+                    document.getElementById('officinaLabel').textContent = officina.denominazione + 
+                        ` (${officina.tot_pezzi} pezzi, ${officina.tot_accessori} accessori)`;
+                    caricaMagazzino(officina.codice);
                 }
             } catch (e) {
                 console.error('Errore:', e);
             }
         }
         
-        async function caricaMagazzino() {
-            const officina = document.getElementById('officinaSelect').value;
-            const container = document.getElementById('dettagliOfficina');
-            
-            if (!officina) {
-                container.style.display = 'none';
-                return;
-            }
-            
-            container.style.display = 'block';
-            
+        async function caricaMagazzino(officina) {
             try {
                 const response = await fetch(API_BASE + 'magazzino.php?officina=' + officina);
                 const data = await response.json();
@@ -115,10 +112,56 @@
                 if (data.success) {
                     renderPezzi(data.pezzi);
                     renderAccessori(data.accessori);
+                    caricaStorico(officina);
                 }
             } catch (e) {
                 console.error('Errore:', e);
             }
+        }
+        
+        async function caricaStorico(officina) {
+            try {
+                const response = await fetch(API_BASE + 'magazzino.php?officina=' + officina + '&action=storico&limit=100');
+                const data = await response.json();
+                if (data.success) {
+                    renderStorico(data.storico);
+                }
+            } catch (e) {
+                console.error('Errore:', e);
+            }
+        }
+        
+        function renderStorico(storico) {
+            const container = document.getElementById('listaStorico');
+            if (!storico || storico.length === 0) {
+                container.innerHTML = '<p>Nessun movimento registrato</p>';
+                return;
+            }
+            
+            let html = '<table class="storico-table">';
+            html += '<tr><th>Data</th><th>Articolo</th><th>Tipo</th><th>Operazione</th><th>Quantità</th><th>Operatore</th><th>Nota</th></tr>';
+            
+            storico.forEach(s => {
+                const data = new Date(s.data_movimento).toLocaleString('it-IT');
+                const classeOp = 'operazione-' + s.operazione;
+                const labelOp = s.operazione === 'carico' ? 'Carico' : (s.operazione === 'scarico' ? 'Scarico' : 'Intervento');
+                const segno = s.operazione === 'scarico' ? '-' : '+';
+                const operatore = s.nome_operatore ? s.nome_operatore + ' ' + s.cognome_operatore : '-';
+                const nota = s.nota || '-';
+                
+                html += `<tr>
+                    <td>${data}</td>
+                    <td>${s.codice}</td>
+                    <td>${s.tipo === 'pezzo' ? 'Pezzo' : 'Accessorio'}</td>
+                    <td class="${classeOp}">${labelOp}</td>
+                    <td>${segno}${s.quantita}</td>
+                    <td>${operatore}</td>
+                    <td>${nota}</td>
+                </tr>`;
+            });
+            
+            html += '</table>';
+            container.innerHTML = html;
         }
         
         function renderPezzi(pezzi) {
@@ -149,6 +192,9 @@
                         <button class="qty-btn" onclick="modificaQty('${p.codice}', ${p.quantita}, -1)">-</button>
                         <input type="number" id="qty_${p.codice}" value="${p.quantita}" min="0" onchange="salvaQty('pezzo', '${p.codice}', this.value)">
                         <button class="qty-btn" onclick="modificaQty('${p.codice}', ${p.quantita}, 1)">+</button>
+                    </div>
+                    <div style="margin-left: 10px; min-width: 150px;">
+                        <input type="text" id="nota_${p.codice}" placeholder="Nota opzionale" class="nota-input" style="margin-bottom: 5px;">
                     </div>
                 `;
                 container.appendChild(card);
@@ -184,6 +230,9 @@
                         <input type="number" id="qty_${a.codice}" value="${a.quantita}" min="0" onchange="salvaQty('accessorio', '${a.codice}', this.value)">
                         <button class="qty-btn" onclick="modificaQty('${a.codice}', ${a.quantita}, 1)">+</button>
                     </div>
+                    <div style="margin-left: 10px; min-width: 150px;">
+                        <input type="text" id="nota_${a.codice}" placeholder="Nota opzionale" class="nota-input" style="margin-bottom: 5px;">
+                    </div>
                 `;
                 container.appendChild(card);
             });
@@ -198,23 +247,33 @@
         }
         
         async function salvaQty(tipo, codice, quantita) {
-            const officina = document.getElementById('officinaSelect').value;
+            const response = await fetch(API_BASE + 'magazzino.php');
+            const dataOfficine = await response.json();
+            const officina = dataOfficine.officine[0].codice;
+            
+            const notaInput = document.getElementById('nota_' + codice);
+            const nota = notaInput ? notaInput.value : '';
+            
             const action = tipo === 'pezzo' ? 'aggiorna_pezzo' : 'aggiorna_accessorio';
             
             try {
-                const response = await fetch(API_BASE + 'magazzino.php', {
+                const res = await fetch(API_BASE + 'magazzino.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: action,
                         officina: officina,
                         codice: codice,
-                        quantita: parseInt(quantita)
+                        quantita: parseInt(quantita),
+                        nota: nota
                     })
                 });
-                const data = await response.json();
+                const data = await res.json();
                 if (!data.success) {
                     alert('Errore: ' + data.error);
+                } else {
+                    caricaMagazzino(officina);
+                    if (notaInput) notaInput.value = '';
                 }
             } catch (e) {
                 console.error('Errore:', e);

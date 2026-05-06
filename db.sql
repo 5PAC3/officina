@@ -147,6 +147,21 @@ CREATE TABLE utilizza_accessorio (
     FOREIGN KEY (accessorio_codice) REFERENCES accessorio(codice) ON DELETE CASCADE
 );
 
+-- STORICO MOVIMENTI MAGAZZINO
+CREATE TABLE storico_movimenti (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    officina_codice VARCHAR(10),
+    tipo ENUM('pezzo', 'accessorio'),
+    codice VARCHAR(10),
+    quantita INT,
+    operazione ENUM('carico', 'scarico', 'intervento'),
+    eseguito_da INT,
+    data_movimento DATETIME DEFAULT CURRENT_TIMESTAMP,
+    nota TEXT,
+    FOREIGN KEY (officina_codice) REFERENCES officina(codice) ON DELETE SET NULL,
+    FOREIGN KEY (eseguito_da) REFERENCES dipendente(id) ON DELETE SET NULL
+);
+
 -- =============================================
 -- DATI DI ESEMPIO
 -- =============================================

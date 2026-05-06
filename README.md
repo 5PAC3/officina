@@ -66,10 +66,10 @@ db.sql          schema + dati
 - [x] Funzione php per creazione di codici OTP
 - [x] Pagina conferma verify
 - [x] Pagina di reset password 
-- [ ] completare la parte del magazziniere 
-- [ ] utenti tipologia magazziniere 
-- [ ] associato ad 1 sola officina
-- [ ] aggiungere rimuovere i n. pezzi di ricambio (tipo acquista o vende)
-- [ ] i pezzi sono tutti quelli presenti nel catalogo non nella singola officina
+- [x] completare la parte del magazziniere
+- [x] utenti tipologia magazziniere
+- [x] associato ad 1 sola officina (filtro applicato in API + storico movimenti)
+- [x] aggiungere rimuovere i n. pezzi di ricambio (tipo acquista o vende)
+- [x] i pezzi sono tutti quelli presenti nel catalogo non nella singola officina
 
 
