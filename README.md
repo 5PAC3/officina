@@ -16,7 +16,7 @@ Web app per la gestione di officine automobilistiche, ricerca servizi e ricambi.
 /classes/       database.php, mailer.php, otp.php
 /configs/       config.php
 /css/           style.css
-/js/            main.js, config.js
+/js/            main.js, config.js (generato da .env)
 *.html          pagine frontend
 db.sql          schema + dati
 ```
@@ -66,3 +66,10 @@ db.sql          schema + dati
 - [x] Funzione php per creazione di codici OTP
 - [x] Pagina conferma verify
 - [x] Pagina di reset password 
+- [ ] completare la parte del magazziniere 
+- [ ] utenti tipologia magazziniere 
+- [ ] associato ad 1 sola officina
+- [ ] aggiungere rimuovere i n. pezzi di ricambio (tipo acquista o vende)
+- [ ] i pezzi sono tutti quelli presenti nel catalogo non nella singola officina
+
+
