@@ -21,7 +21,7 @@ Web app per la gestione di officine automobilistiche, ricerca servizi e ricambi.
 db.sql          schema + dati
 ```
 
-## Database (13 tabelle)
+## Database (14 tabelle)
 
 - `officina` - anagrafica officine
 - `dipendente` - admin/tecnico/magazziniere (ruolo + hash password)
@@ -34,6 +34,25 @@ db.sql          schema + dati
 - `presenza_pezzo` / `presenza_accessorio` - magazzino per officina
 - `intervento` - interventi effettuati
 - `comprende_servizio` / `utilizza_pezzo` / `utilizza_accessorio` - dettaglio intervento
+- `storico_movimenti` - storico carichi/scarichi magazzino
+
+> **Attenzione:** Il file `db.sql` è stato aggiornato con la nuova tabella `storico_movimenti`. È necessario eseguire manualmente la migration sul database di produzione:
+>
+> ```sql
+> CREATE TABLE storico_movimenti (
+>     id INT PRIMARY KEY AUTO_INCREMENT,
+>     officina_codice VARCHAR(10),
+>     tipo ENUM('pezzo', 'accessorio'),
+>     codice VARCHAR(10),
+>     quantita INT,
+>     operazione ENUM('carico', 'scarico', 'intervento'),
+>     eseguito_da INT,
+>     data_movimento DATETIME DEFAULT CURRENT_TIMESTAMP,
+>     nota TEXT,
+>     FOREIGN KEY (officina_codice) REFERENCES officina(codice) ON DELETE SET NULL,
+>     FOREIGN KEY (eseguito_da) REFERENCES dipendente(id) ON DELETE SET NULL
+> );
+> ```
 
 ## Ruoli
 
